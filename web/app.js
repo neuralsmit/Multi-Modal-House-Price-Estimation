@@ -854,71 +854,87 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Benchmark Matrix Chart ---
     function renderBenchmarkChart() {
         const tableBody = document.getElementById('table-benchmark-body');
-        tableBody.innerHTML = '';
+        if (tableBody) {
+            tableBody.innerHTML = '';
 
-        // Populate Table
-        const sorted = [...benchmarkData].sort((a, b) => a.rank - b.rank);
-        sorted.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${item.model}</strong></td>
-                <td><span class="badge">${item.category}</span></td>
-                <td><span class="highlight">${formatINR(item.maeINR)}</span></td>
-                <td>${formatUSD(item.maeUSD)}</td>
-                <td><span class="highlight">${item.r2.toFixed(3)}</span></td>
-                <td>#${item.rank}</td>
-            `;
-            tableBody.appendChild(tr);
-        });
+            // Populate Table
+            const sorted = [...benchmarkData].sort((a, b) => a.rank - b.rank);
+            sorted.forEach(item => {
+                const tr = document.createElement('tr');
+                const isBest = item.rank === 1;
+                tr.innerHTML = `
+                    <td><strong style="${isBest ? 'color: #34d399;' : ''}">${item.model}</strong></td>
+                    <td><span class="badge" style="${isBest ? 'background: rgba(16,185,129,0.2); color: #34d399; border-color: rgba(16,185,129,0.4);' : ''}">${item.category}</span></td>
+                    <td><span class="highlight">${formatINR(item.maeINR)}</span></td>
+                    <td>${formatUSD(item.maeUSD)}</td>
+                    <td><span class="highlight">${item.r2.toFixed(3)}</span></td>
+                    <td><span class="badge" style="${isBest ? 'background: linear-gradient(135deg, #10b981, #059669); color: #fff;' : ''}">#${item.rank}</span></td>
+                `;
+                tableBody.appendChild(tr);
+            });
 
-        // Chart setup
-        if (benchmarkChart) benchmarkChart.destroy();
-        const ctx = document.getElementById('chart-benchmark').getContext('2d');
+            // Chart setup
+            if (benchmarkChart) benchmarkChart.destroy();
+            const ctx = document.getElementById('chart-benchmark').getContext('2d');
 
-        const labels = sorted.map(d => d.model);
-        const dataVals = sorted.map(d => currentMetric === 'mae' ? (currencyMode === 'usd' ? d.maeUSD : d.maeINR) : d.r2);
+            const isMobile = window.innerWidth < 640;
+            const labels = sorted.map(d => {
+                if (!isMobile) return d.model;
+                return d.model
+                    .replace(' Regressor', '')
+                    .replace(' Network', '')
+                    .replace('Dual-Branch ', 'DB-');
+            });
 
-        let datasetLabel = currentMetric === 'mae' ? 'Mean Absolute Error (MAE in ₹ INR & $ USD)' : 'R² Score Accuracy';
+            const dataVals = sorted.map(d => currentMetric === 'mae' ? (currencyMode === 'usd' ? d.maeUSD : d.maeINR) : d.r2);
+            let datasetLabel = currentMetric === 'mae' ? 'Mean Absolute Error (MAE in ₹ INR & $ USD)' : 'R² Score Accuracy';
 
-        benchmarkChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: datasetLabel,
-                    data: dataVals,
-                    backgroundColor: sorted.map(d => d.model.includes('Neural') ? '#10b981' : d.category.includes('Advanced') ? '#6366f1' : '#64748b'),
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { labels: { color: '#f8fafc' } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                if (currentMetric === 'r2') return `R² Score: ${context.raw.toFixed(3)}`;
-                                const idx = context.dataIndex;
-                                const item = sorted[idx];
-                                return `MAE: ${formatINR(item.maeINR)} | ${formatUSD(item.maeUSD)}`;
+            benchmarkChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: datasetLabel,
+                        data: dataVals,
+                        backgroundColor: sorted.map(d => d.model.includes('Neural') ? '#10b981' : d.category.includes('Advanced') ? '#6366f1' : '#64748b'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', font: { size: isMobile ? 10 : 12 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (currentMetric === 'r2') return `R² Score: ${context.raw.toFixed(3)}`;
+                                    const idx = context.dataIndex;
+                                    const item = sorted[idx];
+                                    return `MAE: ${formatINR(item.maeINR)} | ${formatUSD(item.maeUSD)}`;
+                                }
                             }
                         }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: '#94a3b8', font: { size: 10 } },
-                        grid: { display: false }
                     },
-                    y: {
-                        ticks: { color: '#94a3b8' },
-                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: isMobile ? 8.5 : 10 },
+                                maxRotation: isMobile ? 45 : 0,
+                                minRotation: isMobile ? 25 : 0,
+                                autoSkip: false
+                            },
+                            grid: { display: false }
+                        },
+                        y: {
+                            ticks: { color: '#94a3b8', font: { size: isMobile ? 9 : 11 } },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
         refreshIcons();
     }
 
