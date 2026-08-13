@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Modal House Price Estimation | Visual & Textual AI Platform</title>
+    <meta name="description" content="State-of-the-art Multi-Modal House Price Estimation using Dual-Branch CNN + MLP Neural Networks, XGBoost, CatBoost, and SIFT visual feature extraction.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <div class="glow-bg"></div>
+
+    <!-- Compact Navigation Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-group">
+                <div class="logo-icon"><i data-lucide="layers"></i></div>
+                <div class="logo-text">
+                    <h1>MultiModal<span>Valuation</span></h1>
+                    <span class="badge">Dual-Branch AI</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <!-- Currency Toggle Control -->
+                <div class="currency-selector">
+                    <i data-lucide="globe"></i>
+                    <select id="currency-mode" class="custom-select currency-select">
+                        <option value="both" selected>Dual Currency (₹ INR & $ USD)</option>
+                        <option value="inr">₹ INR (Indian Rupees)</option>
+                        <option value="usd">$ USD (US Dollars)</option>
+                    </select>
+                </div>
+
+                <nav class="nav-links">
+                    <button class="nav-btn active" data-tab="estimator"><i data-lucide="calculator"></i> Price Estimator</button>
+                    <button class="nav-btn" data-tab="areawise"><i data-lucide="map-pin"></i> All India Cities</button>
+                    <button class="nav-btn" data-tab="benchmark"><i data-lucide="bar-chart-3"></i> Benchmarks</button>
+                    <button class="nav-btn" data-tab="visualizer"><i data-lucide="eye"></i> Vision & SIFT</button>
+                    <button class="nav-btn" data-tab="eda"><i data-lucide="pie-chart"></i> EDA Explorer</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <!-- TAB 1: MULTI-MODAL ESTIMATOR -->
+        <section id="tab-estimator" class="tab-pane active">
+            <div class="section-header">
+                <h2>Multi-Modal House Price Estimator (Pan-India)</h2>
+                <p>Combine property visual features (4-view composite collage) with tabular attributes to estimate market price based on authentic per sq ft market rates across Indian states.</p>
+            </div>
+
+            <div class="grid-2col">
+                <!-- Inputs Column -->
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="sliders"></i> Property Attributes (Tabular Input)
+                    </div>
+
+                    <div class="input-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-bedrooms">Bedrooms: <span id="val-bedrooms" class="highlight">3</span> BHK</label>
+                                <input type="range" id="input-bedrooms" min="1" max="6" value="3" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="input-bathrooms">Bathrooms: <span id="val-bathrooms" class="highlight">2.5</span></label>
+                                <input type="range" id="input-bathrooms" min="1" max="5" value="2.5" step="0.5">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-area">Total Area (sq ft): <span id="val-area" class="highlight">1,500</span> sq ft</label>
+                                <input type="range" id="input-area" min="500" max="6000" value="1500" step="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="input-zipcode">Select Indian State & City</label>
+                                <select id="input-zipcode" class="custom-select">
+                                    <optgroup label="Gujarat">
+                                        <option value="ahmedabad_bodakdev">Ahmedabad - Bodakdev / Sindhu Bhavan (₹9,000/sq ft)</option>
+                                        <option value="ahmedabad_sg" selected>Ahmedabad - SG Highway / Satellite (₹7,800/sq ft)</option>
+                                        <option value="ahmedabad_bopal">Ahmedabad - Bopal / South Bopal (₹5,800/sq ft)</option>
+                                        <option value="surat_vesu">Surat - Vesu / Piplod (₹6,500/sq ft)</option>
+                                        <option value="vadodara_alkapuri">Vadodara - Alkapuri / Gotri (₹4,800/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Maharashtra">
+                                        <option value="mumbai_bandra">Mumbai - Bandra West / Worli (₹55,000/sq ft)</option>
+                                        <option value="mumbai_andheri">Mumbai - Andheri / Powai (₹24,000/sq ft)</option>
+                                        <option value="mumbai_thane">Mumbai - Thane / Navi Mumbai (₹14,000/sq ft)</option>
+                                        <option value="pune_baner">Pune - Baner / Koregaon Park (₹10,500/sq ft)</option>
+                                        <option value="nagpur_civil">Nagpur - Civil Lines / Wardha Rd (₹5,200/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Delhi NCR">
+                                        <option value="delhi_gurgaon">Gurgaon NCR - Golf Course Rd (₹26,000/sq ft)</option>
+                                        <option value="delhi_noida">Noida NCR - Sector 62 / Expressway (₹7,500/sq ft)</option>
+                                        <option value="delhi_south">South Delhi - Greater Kailash / Saket (₹22,000/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Karnataka">
+                                        <option value="bengaluru_indiranagar">Bengaluru - Indiranagar / Koramangala (₹16,000/sq ft)</option>
+                                        <option value="bengaluru_whitefield">Bengaluru - Whitefield / Sarjapur (₹8,500/sq ft)</option>
+                                        <option value="mysuru_gokulam">Mysuru - Gokulam / Vijayanagar (₹4,500/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Tamil Nadu">
+                                        <option value="chennai_adyar">Chennai - ECR / Adyar / Nungambakkam (₹13,500/sq ft)</option>
+                                        <option value="coimbatore_rs">Coimbatore - Race Course / RS Puram (₹6,200/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Telangana & Andhra Pradesh">
+                                        <option value="hyderabad_gachibowli">Hyderabad - Gachibowli / HITECH City (₹11,500/sq ft)</option>
+                                        <option value="vizag_beach">Visakhapatnam - Beach Road / MVP Colony (₹5,800/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="West Bengal">
+                                        <option value="kolkata_newtown">Kolkata - New Town / Salt Lake (₹8,200/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Uttar Pradesh">
+                                        <option value="lucknow_gomtinagar">Lucknow - Gomti Nagar / Hazratganj (₹6,000/sq ft)</option>
+                                        <option value="varanasi_cantt">Varanasi - Cantonment / Sigra (₹5,100/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Rajasthan">
+                                        <option value="jaipur_cscheme">Jaipur - C-Scheme / Vaishali Nagar (₹6,800/sq ft)</option>
+                                        <option value="udaipur_shobhagpura">Udaipur - Shobhagpura / Sukher (₹4,900/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Punjab & Chandigarh">
+                                        <option value="chandigarh_sec17">Chandigarh / Mohali - Sector 17 (₹9,500/sq ft)</option>
+                                        <option value="ludhiana_model">Ludhiana - Model Town / Gurdev Nagar (₹5,400/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Kerala">
+                                        <option value="kochi_marine">Kochi - Marine Drive / Kakkanad (₹7,200/sq ft)</option>
+                                        <option value="trivandrum_kowdiar">Trivandrum - Kowdiar / Technopark (₹6,100/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Madhya Pradesh">
+                                        <option value="indore_vijaynagar">Indore - Vijay Nagar / Super Corridor (₹5,500/sq ft)</option>
+                                        <option value="bhopal_arera">Bhopal - Arera Colony (₹4,200/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Goa">
+                                        <option value="goa_panaji">Goa - Panaji / Miramar / Candolim (₹11,000/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Hill States (UK & HP)">
+                                        <option value="dehradun_rajpur">Dehradun - Rajpur Road (₹6,500/sq ft)</option>
+                                        <option value="shimla_mall">Shimla - Mall Road / Chotta Shimla (₹7,800/sq ft)</option>
+                                    </optgroup>
+                                    <optgroup label="Eastern & NE States">
+                                        <option value="bhubaneswar_patia">Bhubaneswar - Patia / Jaydev Vihar (₹6,200/sq ft)</option>
+                                        <option value="patna_boring">Patna - Boring Road (₹6,500/sq ft)</option>
+                                        <option value="guwahati_gsroad">Guwahati - GS Road (₹5,800/sq ft)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-style">Architectural Style</label>
+                                <select id="input-style" class="custom-select">
+                                    <option value="modern">Modern Luxury Highrise</option>
+                                    <option value="mediterranean">Gated Community Villa</option>
+                                    <option value="craftsman">Independent Floor / Bungalow</option>
+                                    <option value="ranch">Standard Builder Apartment</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="input-condition">Property Condition</label>
+                                <select id="input-condition" class="custom-select">
+                                    <option value="turnkey">Ready to Move / Fully Furnished</option>
+                                    <option value="good">Semi-Furnished / Well Maintained</option>
+                                    <option value="fair">Under Construction (Near Completion)</option>
+                                    <option value="fixer">Old Construction / Needs Renovation</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="card-title">
+                            <i data-lucide="image"></i> Visual Property Data (4 Views)
+                        </div>
+                        <p class="subtext">Select preset visual style profiles or upload custom 4-view property images (Bathroom, Bedroom, Exterior, Kitchen).</p>
+
+                        <div class="preset-selector">
+                            <button class="preset-btn active" data-preset="luxury">
+                                <i data-lucide="sparkles"></i> Premium Interior Profile
+                            </button>
+                            <button class="preset-btn" data-preset="suburban">
+                                <i data-lucide="home"></i> Family Apartment Profile
+                            </button>
+                            <button class="preset-btn" data-preset="cozy">
+                                <i data-lucide="coffee"></i> Compact Studio Profile
+                            </button>
+                        </div>
+
+                        <div class="image-grid-selector">
+                            <div class="img-slot" id="slot-bathroom">
+                                <div class="slot-label">Bathroom</div>
+                                <canvas id="canvas-bath" width="128" height="128"></canvas>
+                            </div>
+                            <div class="img-slot" id="slot-bedroom">
+                                <div class="slot-label">Bedroom</div>
+                                <canvas id="canvas-bed" width="128" height="128"></canvas>
+                            </div>
+                            <div class="img-slot" id="slot-exterior">
+                                <div class="slot-label">Frontal Exterior</div>
+                                <canvas id="canvas-ext" width="128" height="128"></canvas>
+                            </div>
+                            <div class="img-slot" id="slot-kitchen">
+                                <div class="slot-label">Kitchen</div>
+                                <canvas id="canvas-kitch" width="128" height="128"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prediction Results Column -->
+                <div class="card glass-card result-card">
+                    <div class="card-title">
+                        <i data-lucide="cpu"></i> AI Multi-Modal Valuation
+                    </div>
+
+                    <div class="price-display">
+                        <span class="price-label">Estimated Market Value</span>
+                        <div class="price-amount" id="predicted-price">₹1.17 Crore</div>
+                        <div class="price-inr-sub" id="predicted-price-inr">$140,120</div>
+                        <div class="price-range">Confidence Interval: <span id="price-min">₹1.10 Cr</span> &mdash; <span id="price-max">₹1.24 Cr</span></div>
+                    </div>
+
+                    <div class="metrics-row">
+                        <div class="metric-box">
+                            <i data-lucide="ruler"></i>
+                            <div class="metric-val" id="metric-sqft">₹7,800 / sq ft</div>
+                            <div class="metric-lbl">Price per Sq Ft</div>
+                        </div>
+                        <div class="metric-box">
+                            <i data-lucide="eye"></i>
+                            <div class="metric-val" id="metric-visual">88.5 / 100</div>
+                            <div class="metric-lbl">Visual Appeal Score</div>
+                        </div>
+                        <div class="metric-box">
+                            <i data-lucide="layers"></i>
+                            <div class="metric-val" id="metric-rooms">6.5</div>
+                            <div class="metric-lbl">Total Rooms Engineered</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <span>Feature Impact Breakdown (Shapley Values in INR ₹ & USD $)</span>
+                        </div>
+                        <canvas id="chart-impact" height="160"></canvas>
+                    </div>
+
+                    <div class="collage-preview-box">
+                        <div class="chart-header">
+                            <span>2x2 Composite CNN Input Matrix (64x64)</span>
+                        </div>
+                        <div class="collage-wrapper">
+                            <canvas id="canvas-collage" width="128" height="128"></canvas>
+                            <div class="collage-info">
+                                <p><strong>CNN Channel Input:</strong> Fused 2x2 grid matrix consisting of Bathroom (top-left), Bedroom (top-right), Exterior (bottom-right), and Kitchen (bottom-left).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: AREA-WISE PREDICTION & NEIGHBORHOOD ANALYSIS -->
+        <section id="tab-areawise" class="tab-pane">
+            <div class="section-header">
+                <h2>Pan-India State & Popular City Real-Estate Prediction Matrix</h2>
+                <p>Compare market valuations across key cities in every state in India (Ahmedabad, Mumbai, Pune, Gurgaon, Noida, Bengaluru, Chennai, Hyderabad, Kolkata, Jaipur, Lucknow, Kochi, Indore, Goa, Chandigarh, Dehradun) for different property size bands.</p>
+            </div>
+
+            <div class="grid-2col">
+                <!-- Area Selection & Controls Card -->
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="map-pin"></i> Select State & City Locality
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.2rem;">
+                        <label for="area-select-target">Target Locality / City Area</label>
+                        <select id="area-select-target" class="custom-select">
+                            <optgroup label="Gujarat">
+                                <option value="ahmedabad_bodakdev">Ahmedabad - Bodakdev / Sindhu Bhavan (₹9,000 / sq ft)</option>
+                                <option value="ahmedabad_sg" selected>Ahmedabad - SG Highway / Satellite (₹7,800 / sq ft)</option>
+                                <option value="ahmedabad_bopal">Ahmedabad - Bopal / South Bopal (₹5,800 / sq ft)</option>
+                                <option value="surat_vesu">Surat - Vesu / Piplod (₹6,500 / sq ft)</option>
+                                <option value="vadodara_alkapuri">Vadodara - Alkapuri / Gotri (₹4,800 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Maharashtra">
+                                <option value="mumbai_bandra">Mumbai - Bandra West / Worli (₹55,000 / sq ft)</option>
+                                <option value="mumbai_andheri">Mumbai - Andheri / Powai (₹24,000 / sq ft)</option>
+                                <option value="mumbai_thane">Mumbai - Thane / Navi Mumbai (₹14,000 / sq ft)</option>
+                                <option value="pune_baner">Pune - Baner / Koregaon Park (₹10,500 / sq ft)</option>
+                                <option value="nagpur_civil">Nagpur - Civil Lines / Wardha Rd (₹5,200 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Delhi NCR">
+                                <option value="delhi_gurgaon">Gurgaon NCR - Golf Course Rd (₹26,000 / sq ft)</option>
+                                <option value="delhi_noida">Noida NCR - Sector 62 / Expressway (₹7,500 / sq ft)</option>
+                                <option value="delhi_south">South Delhi - Greater Kailash / Saket (₹22,000 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Karnataka">
+                                <option value="bengaluru_indiranagar">Bengaluru - Indiranagar / Koramangala (₹16,000 / sq ft)</option>
+                                <option value="bengaluru_whitefield">Bengaluru - Whitefield / Sarjapur (₹8,500 / sq ft)</option>
+                                <option value="mysuru_gokulam">Mysuru - Gokulam / Vijayanagar (₹4,500 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Tamil Nadu">
+                                <option value="chennai_adyar">Chennai - ECR / Adyar / Nungambakkam (₹13,500 / sq ft)</option>
+                                <option value="coimbatore_rs">Coimbatore - Race Course / RS Puram (₹6,200 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Telangana & AP">
+                                <option value="hyderabad_gachibowli">Hyderabad - Gachibowli / HITECH City (₹11,500 / sq ft)</option>
+                                <option value="vizag_beach">Visakhapatnam - Beach Road / MVP Colony (₹5,800 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="West Bengal">
+                                <option value="kolkata_newtown">Kolkata - New Town / Salt Lake (₹8,200 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Uttar Pradesh">
+                                <option value="lucknow_gomtinagar">Lucknow - Gomti Nagar / Hazratganj (₹6,000 / sq ft)</option>
+                                <option value="varanasi_cantt">Varanasi - Cantonment / Sigra (₹5,100 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Rajasthan">
+                                <option value="jaipur_cscheme">Jaipur - C-Scheme / Vaishali Nagar (₹6,800 / sq ft)</option>
+                                <option value="udaipur_shobhagpura">Udaipur - Shobhagpura / Sukher (₹4,900 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Punjab & Chandigarh">
+                                <option value="chandigarh_sec17">Chandigarh / Mohali - Sector 17 (₹9,500 / sq ft)</option>
+                                <option value="ludhiana_model">Ludhiana - Model Town / Gurdev Nagar (₹5,400 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Kerala">
+                                <option value="kochi_marine">Kochi - Marine Drive / Kakkanad (₹7,200 / sq ft)</option>
+                                <option value="trivandrum_kowdiar">Trivandrum - Kowdiar / Technopark (₹6,100 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Madhya Pradesh">
+                                <option value="indore_vijaynagar">Indore - Vijay Nagar / Super Corridor (₹5,500 / sq ft)</option>
+                                <option value="bhopal_arera">Bhopal - Arera Colony (₹4,200 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Goa">
+                                <option value="goa_panaji">Goa - Panaji / Miramar / Candolim (₹11,000 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Hill States (UK & HP)">
+                                <option value="dehradun_rajpur">Dehradun - Rajpur Road (₹6,500 / sq ft)</option>
+                                <option value="shimla_mall">Shimla - Mall Road / Chotta Shimla (₹7,800 / sq ft)</option>
+                            </optgroup>
+                            <optgroup label="Eastern & NE States">
+                                <option value="bhubaneswar_patia">Bhubaneswar - Patia / Jaydev Vihar (₹6,200 / sq ft)</option>
+                                <option value="patna_boring">Patna - Boring Road (₹6,500 / sq ft)</option>
+                                <option value="guwahati_gsroad">Guwahati - GS Road (₹5,800 / sq ft)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.2rem;">
+                        <label for="area-sqft-slider">Area Size (Sq Ft): <span id="area-sqft-val" class="highlight">1,500</span> sq ft</label>
+                        <input type="range" id="area-sqft-slider" min="500" max="6000" value="1500" step="50">
+                    </div>
+
+                    <div class="area-stats-grid">
+                        <div class="area-stat-box">
+                            <div class="stat-lbl">Area Demand Index</div>
+                            <div class="stat-val highlight" id="area-demand-score">92 / 100</div>
+                        </div>
+                        <div class="area-stat-box">
+                            <div class="stat-lbl">Market Rate / Sq Ft</div>
+                            <div class="stat-val" id="area-avg-sqft-price">₹7,800 / sq ft</div>
+                        </div>
+                        <div class="area-stat-box">
+                            <div class="stat-lbl">YoY Appreciation</div>
+                            <div class="stat-val" style="color: #34d399;" id="area-growth-rate">+11.5%</div>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="card-title">
+                        <i data-lucide="layers"></i> Property Configuration Predictions for Selected Area
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="benchmark-table">
+                            <thead>
+                                <tr>
+                                    <th>Configuration</th>
+                                    <th>Sq Ft Range</th>
+                                    <th>Estimated Value (₹ INR)</th>
+                                    <th>Estimated Value ($ USD)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="area-bands-table-body">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Area Comparison Chart Card -->
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="bar-chart-2"></i> Pan-India City Price Comparison Chart
+                    </div>
+                    <p class="subtext">Valuation comparison across popular cities from all Indian states for the selected property size.</p>
+
+                    <div class="chart-container-large">
+                        <canvas id="chart-area-comparison" height="260"></canvas>
+                    </div>
+
+                    <!-- Dynamic Area Insight Box -->
+                    <div class="benchmark-summary" id="area-insight-box" style="margin-top: 1.2rem;">
+                        <i data-lucide="sparkles"></i> <span><strong>City Insight:</strong> <span id="area-insight-text">Loading city insight...</span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: MODEL BENCHMARKS -->
+        <section id="tab-benchmark" class="tab-pane">
+            <div class="section-header">
+                <h2>Model Benchmark Performance Comparison</h2>
+                <p>Comparison across Classic ML, SIFT + Advanced Ensemble Regressors (Random Forest, XGBoost, CatBoost), and the Dual-Branch Multi-Modal Neural Network.</p>
+            </div>
+
+            <div class="controls-bar">
+                <div class="toggle-group">
+                    <button class="toggle-btn active" id="btn-metric-mae"><i data-lucide="dollar-sign"></i> Mean Absolute Error (MAE in ₹ & $)</button>
+                    <button class="toggle-btn" id="btn-metric-r2"><i data-lucide="trending-up"></i> R² Score Accuracy</button>
+                </div>
+            </div>
+
+            <div class="grid-2col">
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="bar-chart"></i> Benchmark Comparison Chart
+                    </div>
+                    <div class="chart-container-large">
+                        <canvas id="chart-benchmark" height="280"></canvas>
+                    </div>
+                </div>
+
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="table"></i> Detailed Model Metrics Matrix
+                    </div>
+                    <div class="table-responsive">
+                        <table class="benchmark-table">
+                            <thead>
+                                <tr>
+                                    <th>Model Name</th>
+                                    <th>Category</th>
+                                    <th>MAE (₹ INR)</th>
+                                    <th>MAE ($ USD)</th>
+                                    <th>R² Score</th>
+                                    <th>Rank</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-benchmark-body">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="benchmark-summary">
+                        <i data-lucide="check-circle-2"></i> <strong>Key Takeaway:</strong> Fusing CNN visual embeddings with tabular MLP features yields the lowest MAE (₹35.19 Lakh / $42,150) and highest $R^2$ score (0.864) compared to standalone textual models.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: VISION & SIFT INSPECTION -->
+        <section id="tab-visualizer" class="tab-pane">
+            <div class="section-header">
+                <h2>Visual Feature & SIFT Inspector</h2>
+                <p>Explore how Computer Vision algorithms extract feature descriptors and keypoints from house images.</p>
+            </div>
+
+            <div class="grid-2col">
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="aperture"></i> SIFT Keypoint Feature Detector
+                    </div>
+                    <div class="visualizer-box">
+                        <canvas id="canvas-sift" width="400" height="400"></canvas>
+                    </div>
+                    <div class="visualizer-controls">
+                        <button class="action-btn" id="btn-toggle-sift"><i data-lucide="crosshair"></i> Regenerate SIFT Keypoints</button>
+                        <span class="subtext" id="sift-count">Detected Keypoints: 148 scale-invariant interest points</span>
+                    </div>
+                </div>
+
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="activity"></i> CNN Convolutional Activation Heatmap
+                    </div>
+                    <div class="visualizer-box">
+                        <canvas id="canvas-heatmap" width="400" height="400"></canvas>
+                    </div>
+                    <div class="visualizer-controls">
+                        <p class="subtext">The heatmap illustrates the 3rd Conv2D layer activation intensity across architectural elements (roof line, window frames, kitchen island, lighting).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: EDA EXPLORER -->
+        <section id="tab-eda" class="tab-pane">
+            <div class="section-header">
+                <h2>Exploratory Data Analysis (EDA) Explorer</h2>
+                <p>Univariate and bivariate statistical analysis of property attributes and price correlations.</p>
+            </div>
+
+            <div class="grid-2col">
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="trending-up"></i> Price vs Total Area Scatter Distribution
+                    </div>
+                    <div class="chart-container-large">
+                        <canvas id="chart-scatter" height="250"></canvas>
+                    </div>
+                </div>
+
+                <div class="card glass-card">
+                    <div class="card-title">
+                        <i data-lucide="grid"></i> Feature Correlation Heatmap
+                    </div>
+                    <div class="chart-container-large">
+                        <canvas id="chart-correlation" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>Multi-Modal House Price Estimation Platform &copy; 2026 | Built based on Mehrab-Kalantari/Multi-Modal-House-Price-Estimation</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

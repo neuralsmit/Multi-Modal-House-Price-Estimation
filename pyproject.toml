@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "multimodal-house-price-estimation"
+version = "0.1.0"
+description = "Multi-Modal House Price Estimation project"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.pyright]
+extraPaths = ["src"]
+reportMissingModuleSource = "none"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]
