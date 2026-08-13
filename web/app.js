@@ -459,82 +459,97 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Synthetic Image Drawing & Canvas Utilities ---
-    function drawRoomImage(canvas, type, preset) {
+    // Preset & Custom Image URLs
+    const presetImageUrls = {
+        luxury: {
+            bath: 'images/bathroom.jpg',
+            bed: 'images/bedroom.jpg',
+            ext: 'images/exterior.jpg',
+            kitch: 'images/kitchen.jpg'
+        },
+        suburban: {
+            bath: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=400&q=80',
+            bed: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=400&q=80',
+            ext: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=80',
+            kitch: 'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=400&q=80'
+        },
+        cozy: {
+            bath: 'https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=400&q=80',
+            bed: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=400&q=80',
+            ext: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=400&q=80',
+            kitch: 'https://images.unsplash.com/photo-1565538810643-b5bdb714032a?auto=format&fit=crop&w=400&q=80'
+        }
+    };
+
+    const customRoomImages = { bath: null, bed: null, ext: null, kitch: null };
+
+    // --- Image Drawing & File Upload Utilities ---
+    function drawImageToCanvas(canvas, imgOrSrc, fallbackType, preset) {
         const ctx = canvas.getContext('2d');
         const w = canvas.width;
         const h = canvas.height;
 
+        if (imgOrSrc instanceof HTMLImageElement && imgOrSrc.complete && imgOrSrc.naturalWidth > 0) {
+            ctx.clearRect(0, 0, w, h);
+            // Cover scaling
+            const imgW = imgOrSrc.naturalWidth;
+            const imgH = imgOrSrc.naturalHeight;
+            const scale = Math.max(w / imgW, h / imgH);
+            const x = (w - imgW * scale) / 2;
+            const y = (h - imgH * scale) / 2;
+            ctx.drawImage(imgOrSrc, x, y, imgW * scale, imgH * scale);
+            render2x2Collage();
+            return;
+        }
+
+        if (typeof imgOrSrc === 'string') {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                ctx.clearRect(0, 0, w, h);
+                const imgW = img.naturalWidth;
+                const imgH = img.naturalHeight;
+                const scale = Math.max(w / imgW, h / imgH);
+                const x = (w - imgW * scale) / 2;
+                const y = (h - imgH * scale) / 2;
+                ctx.drawImage(img, x, y, imgW * scale, imgH * scale);
+                render2x2Collage();
+            };
+            img.onerror = () => {
+                drawFallbackGradient(canvas, fallbackType, preset);
+            };
+            img.src = imgOrSrc;
+            return;
+        }
+
+        drawFallbackGradient(canvas, fallbackType, preset);
+    }
+
+    function drawFallbackGradient(canvas, type, preset) {
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
-        let baseHue = 210; // Luxury blue
-        if (preset === 'suburban') baseHue = 35; // Warm beige
-        if (preset === 'cozy') baseHue = 160; // Modern teal/slate
+        let baseHue = 210;
+        if (preset === 'suburban') baseHue = 35;
+        if (preset === 'cozy') baseHue = 160;
 
-        if (type === 'bath') {
-            const grad = ctx.createLinearGradient(0, 0, w, h);
-            grad.addColorStop(0, `hsl(${baseHue}, 60%, 45%)`);
-            grad.addColorStop(1, `hsl(${baseHue + 20}, 70%, 25%)`);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, w, h);
-
-            // Tiles pattern
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-            for (let i = 0; i < w; i += 16) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
-            }
-        } else if (type === 'bed') {
-            const grad = ctx.createLinearGradient(0, 0, w, h);
-            grad.addColorStop(0, `hsl(${baseHue + 30}, 50%, 40%)`);
-            grad.addColorStop(1, `hsl(${baseHue - 10}, 60%, 20%)`);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, w, h);
-
-            // Bedhead representation
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.fillRect(20, 40, 88, 50);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.fillRect(28, 48, 35, 20);
-            ctx.fillRect(66, 48, 35, 20);
-        } else if (type === 'ext') {
-            // Sky & Grass
-            const gradSky = ctx.createLinearGradient(0, 0, 0, h * 0.6);
-            gradSky.addColorStop(0, '#38bdf8');
-            gradSky.addColorStop(1, '#818cf8');
-            ctx.fillStyle = gradSky;
-            ctx.fillRect(0, 0, w, h * 0.6);
-
-            ctx.fillStyle = '#10b981';
-            ctx.fillRect(0, h * 0.6, w, h * 0.4);
-
-            // House Facade
-            ctx.fillStyle = '#f8fafc';
-            ctx.fillRect(25, 35, 78, 50);
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.moveTo(15, 35); ctx.lineTo(64, 10); ctx.lineTo(113, 35);
-            ctx.fill();
-        } else if (type === 'kitch') {
-            const grad = ctx.createLinearGradient(0, 0, w, h);
-            grad.addColorStop(0, '#475569');
-            grad.addColorStop(1, '#1e293b');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, w, h);
-
-            // Island counter
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillRect(15, 60, 98, 30);
-            ctx.fillStyle = '#94a3b8';
-            ctx.fillRect(15, 55, 98, 5);
-        }
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, `hsl(${baseHue}, 60%, 45%)`);
+        grad.addColorStop(1, `hsl(${baseHue + 20}, 70%, 25%)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
     }
 
     function renderSubImages() {
-        drawRoomImage(canvasBath, 'bath', currentPreset);
-        drawRoomImage(canvasBed, 'bed', currentPreset);
-        drawRoomImage(canvasExt, 'ext', currentPreset);
-        drawRoomImage(canvasKitch, 'kitch', currentPreset);
+        const urls = presetImageUrls[currentPreset] || presetImageUrls.luxury;
+
+        drawImageToCanvas(canvasBath, customRoomImages.bath || urls.bath, 'bath', currentPreset);
+        drawImageToCanvas(canvasBed, customRoomImages.bed || urls.bed, 'bed', currentPreset);
+        drawImageToCanvas(canvasExt, customRoomImages.ext || urls.ext, 'ext', currentPreset);
+        drawImageToCanvas(canvasKitch, customRoomImages.kitch || urls.kitch, 'kitch', currentPreset);
+
         render2x2Collage();
     }
 
@@ -545,6 +560,67 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(canvasBed, half, 0, half, half);
         ctx.drawImage(canvasExt, half, half, half, half);
         ctx.drawImage(canvasKitch, 0, half, half, half);
+        if (currentTab === 'visualizer') renderVisualizerCanvases();
+    }
+
+    // --- Custom Image File Upload Event Listeners ---
+    function setupImageUploadHandlers() {
+        const inputCustomImages = document.getElementById('input-custom-images');
+        const uploadStatus = document.getElementById('upload-status');
+
+        const slots = [
+            { id: 'slot-bathroom', fileId: 'file-bath', key: 'bath', label: 'Bathroom' },
+            { id: 'slot-bedroom', fileId: 'file-bed', key: 'bed', label: 'Bedroom' },
+            { id: 'slot-exterior', fileId: 'file-ext', key: 'ext', label: 'Exterior' },
+            { id: 'slot-kitchen', fileId: 'file-kitch', key: 'kitch', label: 'Kitchen' }
+        ];
+
+        slots.forEach(slot => {
+            const slotElem = document.getElementById(slot.id);
+            const fileElem = document.getElementById(slot.fileId);
+
+            if (slotElem && fileElem) {
+                slotElem.addEventListener('click', () => fileElem.click());
+                fileElem.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        loadCustomFileToSlot(e.target.files[0], slot.key, slot.label);
+                    }
+                });
+            }
+        });
+
+        if (inputCustomImages) {
+            inputCustomImages.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                if (!files.length) return;
+
+                const keys = ['bath', 'bed', 'ext', 'kitch'];
+                const labels = ['Bathroom', 'Bedroom', 'Exterior', 'Kitchen'];
+
+                files.slice(0, 4).forEach((file, idx) => {
+                    loadCustomFileToSlot(file, keys[idx], labels[idx]);
+                });
+
+                if (uploadStatus) {
+                    uploadStatus.textContent = `✓ Uploaded ${Math.min(files.length, 4)} custom house photos successfully!`;
+                    uploadStatus.style.color = '#34d399';
+                }
+            });
+        }
+    }
+
+    function loadCustomFileToSlot(file, key, label) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                customRoomImages[key] = img;
+                renderSubImages();
+                updateValuation();
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
     // --- Real-time Valuation Engine (Based on Real Indian City Market Rates) ---
@@ -995,6 +1071,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial Kickoff
+    setupImageUploadHandlers();
     renderSubImages();
     updateValuation();
 });
