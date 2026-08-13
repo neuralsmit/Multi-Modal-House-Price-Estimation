@@ -839,11 +839,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 scales: {
                     x: {
-                        ticks: { color: '#94a3b8' },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 9 },
+                            callback: function(value) {
+                                if (currencyMode === 'usd') {
+                                    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+                                    if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
+                                    return `$${value}`;
+                                } else {
+                                    if (value >= 10000000) return `₹${(value / 10000000).toFixed(1)}Cr`;
+                                    if (value >= 100000) return `₹${(value / 100000).toFixed(0)}L`;
+                                    return `₹${value}`;
+                                }
+                            }
+                        },
                         grid: { color: 'rgba(255,255,255,0.05)' }
                     },
                     y: {
-                        ticks: { color: '#f8fafc' },
+                        ticks: {
+                            color: '#f8fafc',
+                            font: { size: 9.5 }
+                        },
                         grid: { display: false }
                     }
                 }
