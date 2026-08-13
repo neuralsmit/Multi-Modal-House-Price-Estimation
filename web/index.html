@@ -21,16 +21,15 @@
     <!-- Compact Navigation Header -->
     <header class="app-header">
         <div class="header-container">
-            <div class="logo-group">
-                <div class="logo-icon"><i data-lucide="layers"></i></div>
-                <div class="logo-text">
-                    <h1>MultiModal<span>Valuation</span></h1>
-                    <span class="badge">Dual-Branch AI</span>
+            <div class="header-top-row">
+                <div class="logo-group">
+                    <div class="logo-icon"><i data-lucide="layers"></i></div>
+                    <div class="logo-text">
+                        <h1>MultiModal<span>Valuation</span></h1>
+                        <span class="badge">Dual-Branch AI</span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="header-right">
-                <!-- Currency Toggle Control -->
+                
                 <div class="currency-selector">
                     <i data-lucide="globe"></i>
                     <select id="currency-mode" class="custom-select currency-select">
@@ -39,15 +38,15 @@
                         <option value="usd">$ USD (Dollars)</option>
                     </select>
                 </div>
-
-                <nav class="nav-links">
-                    <button class="nav-btn active" data-tab="estimator"><i data-lucide="calculator"></i> Price Estimator</button>
-                    <button class="nav-btn" data-tab="areawise"><i data-lucide="map-pin"></i> All India Cities</button>
-                    <button class="nav-btn" data-tab="benchmark"><i data-lucide="bar-chart-3"></i> Benchmarks</button>
-                    <button class="nav-btn" data-tab="visualizer"><i data-lucide="eye"></i> Vision & SIFT</button>
-                    <button class="nav-btn" data-tab="eda"><i data-lucide="pie-chart"></i> EDA Explorer</button>
-                </nav>
             </div>
+
+            <nav class="nav-links">
+                <button class="nav-btn active" data-tab="estimator"><i data-lucide="calculator"></i> Estimator</button>
+                <button class="nav-btn" data-tab="areawise"><i data-lucide="map-pin"></i> Cities</button>
+                <button class="nav-btn" data-tab="benchmark"><i data-lucide="bar-chart-3"></i> Benchmarks</button>
+                <button class="nav-btn" data-tab="visualizer"><i data-lucide="eye"></i> SIFT Vision</button>
+                <button class="nav-btn" data-tab="eda"><i data-lucide="pie-chart"></i> EDA</button>
+            </nav>
         </div>
     </header>
 
