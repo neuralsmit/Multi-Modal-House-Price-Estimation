@@ -1134,25 +1134,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Auto-Hiding Top Header on Scroll Down ---
-    let lastScrollY = window.scrollY;
+    let lastScrollY = window.scrollY || document.documentElement.scrollTop || 0;
     const headerEl = document.querySelector('.app-header');
 
-    window.addEventListener('scroll', () => {
+    function onScrollUpdate() {
         if (!headerEl) return;
-        const currentScrollY = window.scrollY;
+        const currentScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
 
-        // Hide header when scrolling down past 50px, show when scrolling up
-        if (currentScrollY > 50) {
-            if (currentScrollY > lastScrollY + 5) {
+        // Hide header when scrolling down past 40px, show when scrolling up
+        if (currentScrollY > 40) {
+            if (currentScrollY > lastScrollY + 4) {
                 headerEl.classList.add('header-hidden');
-            } else if (currentScrollY < lastScrollY - 5) {
+            } else if (currentScrollY < lastScrollY - 4) {
                 headerEl.classList.remove('header-hidden');
             }
         } else {
             headerEl.classList.remove('header-hidden');
         }
         lastScrollY = currentScrollY;
-    }, { passive: true });
+    }
+
+    window.addEventListener('scroll', onScrollUpdate, { passive: true });
+    document.addEventListener('scroll', onScrollUpdate, { passive: true });
 
     // Initial Kickoff
     setupImageUploadHandlers();
