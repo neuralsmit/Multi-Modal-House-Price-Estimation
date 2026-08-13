@@ -1136,6 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Auto-Hiding Top Header on Scroll Down ---
     let lastScrollY = window.scrollY || document.documentElement.scrollTop || 0;
     const headerEl = document.querySelector('.app-header');
+    const scrollThreshold = 6;
 
     function onScrollUpdate() {
         if (!headerEl) return;
@@ -1143,9 +1144,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Hide header when scrolling down past 40px, show when scrolling up
         if (currentScrollY > 40) {
-            if (currentScrollY > lastScrollY + 4) {
+            if (currentScrollY > lastScrollY + scrollThreshold) {
                 headerEl.classList.add('header-hidden');
-            } else if (currentScrollY < lastScrollY - 4) {
+            } else if (currentScrollY < lastScrollY - scrollThreshold) {
                 headerEl.classList.remove('header-hidden');
             }
         } else {
