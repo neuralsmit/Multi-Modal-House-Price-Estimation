@@ -385,13 +385,17 @@ document.addEventListener('DOMContentLoaded', () => {
             tabPanes.forEach(p => p.classList.remove('active'));
 
             btn.classList.add('active');
-            document.getElementById(`tab-${targetTab}`).classList.add('active');
+            const activePane = document.getElementById(`tab-${targetTab}`);
+            if (activePane) activePane.classList.add('active');
             currentTab = targetTab;
 
             if (targetTab === 'areawise') renderAreaWiseModule();
             if (targetTab === 'benchmark') renderBenchmarkChart();
             if (targetTab === 'visualizer') renderVisualizerCanvases();
             if (targetTab === 'eda') renderEDACharts();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            refreshIcons();
         });
     });
 
@@ -1032,6 +1036,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scatterData.push({ x: area, y: priceINR });
         }
 
+        const isMobile = window.innerWidth < 640;
         scatterChart = new Chart(ctxScatter, {
             type: 'scatter',
             data: {
@@ -1045,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: '#f8fafc' } },
+                    legend: { labels: { color: '#f8fafc', font: { size: isMobile ? 10 : 12 } } },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
@@ -1059,15 +1064,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 scales: {
                     x: {
-                        title: { display: true, text: 'Square Footage (Sq Ft)', color: '#94a3b8' },
-                        ticks: { color: '#94a3b8' },
+                        title: { display: true, text: 'Square Footage (Sq Ft)', color: '#94a3b8', font: { size: isMobile ? 9 : 11 } },
+                        ticks: { color: '#94a3b8', font: { size: isMobile ? 8.5 : 10 } },
                         grid: { color: 'rgba(255,255,255,0.05)' }
                     },
                     y: {
-                        title: { display: true, text: 'Price (₹ INR / $ USD)', color: '#94a3b8' },
+                        title: { display: true, text: 'Price', color: '#94a3b8', font: { size: isMobile ? 9 : 11 } },
                         ticks: {
                             color: '#94a3b8',
-                            callback: function(val) { return formatINR(val); }
+                            font: { size: isMobile ? 8.5 : 10 },
+                            callback: function(val) {
+                                if (currencyMode === 'usd') {
+                                    if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+                                    if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+                                    return `$${val}`;
+                                } else {
+                                    if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)}Cr`;
+                                    if (val >= 100000) return `₹${(val / 100000).toFixed(0)}L`;
+                                    return `₹${val}`;
+                                }
+                            }
                         },
                         grid: { color: 'rgba(255,255,255,0.05)' }
                     }
@@ -1079,12 +1095,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (corrChart) corrChart.destroy();
         const ctxCorr = document.getElementById('chart-correlation').getContext('2d');
 
+        const corrLabels = isMobile 
+            ? ['Area', 'City Rate', 'Baths', 'BHK', 'Visual (CNN)', 'Room Area']
+            : ['Area Size (sq ft)', 'City Locality Rate', 'Bathrooms', 'Bedrooms (BHK)', 'Visual Appeal (CNN)', 'Avg Room Area'];
+
         corrChart = new Chart(ctxCorr, {
             type: 'bar',
             data: {
-                labels: ['Area Size (sq ft)', 'City Locality Rate', 'Bathrooms', 'Bedrooms (BHK)', 'Visual Appeal (CNN)', 'Avg Room Area'],
+                labels: corrLabels,
                 datasets: [{
-                    label: 'Pearson Correlation with Property Value (r)',
+                    label: 'Pearson Correlation (r)',
                     data: [0.84, 0.79, 0.62, 0.58, 0.46, 0.41],
                     backgroundColor: '#06b6d4',
                     borderRadius: 6
@@ -1093,10 +1113,20 @@ document.addEventListener('DOMContentLoaded', () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#f8fafc' } } },
+                plugins: { legend: { labels: { color: '#f8fafc', font: { size: isMobile ? 10 : 12 } } } },
                 scales: {
-                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    x: {
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: isMobile ? 8.5 : 10 },
+                            maxRotation: isMobile ? 35 : 0
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        ticks: { color: '#94a3b8', font: { size: isMobile ? 8.5 : 10 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
                 }
             }
         });
